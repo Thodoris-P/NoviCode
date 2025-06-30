@@ -4,10 +4,27 @@ namespace NoviCode.Core.Services;
 
 public class CurrencyConverter : ICurrencyConverter
 {
-    public Task<decimal> ConvertAsync(decimal amount, string fromCurrency, string toCurrency)
+    private readonly IExchangeRatesRepository _exchangeRatesRepository;
+
+    public CurrencyConverter(IExchangeRatesRepository exchangeRatesRepository)
     {
-        // Simulate an asynchronous operation for currency conversion.
-        // In a real application, this would call an external API or service.
-        return Task.FromResult(amount); // For now, just return the same amount.
+        _exchangeRatesRepository = exchangeRatesRepository;
+    }
+    
+    public async Task<decimal> ConvertAsync(decimal amount, string fromCurrency, string toCurrency)
+    {
+        if (fromCurrency == toCurrency)
+        {
+            return amount;
+        }
+        
+        var from = await _exchangeRatesRepository.GetExchangeRate(fromCurrency);
+        var to = await _exchangeRatesRepository.GetExchangeRate(toCurrency);
+        
+        // Convert from A → EUR → B
+        var amountInEur    = amount / from.Rate;
+        var amountInTarget = amountInEur * to.Rate;
+
+        return amountInTarget;
     }
 }

@@ -14,23 +14,23 @@ namespace Novicode.Api.Controllers;
 [ProducesResponseType(StatusCodes.Status500InternalServerError)] 
 public class WalletsController : ControllerBase
 {
-    private readonly IWalletService _walletService;
+    private readonly IWalletFacade _walletFacade;
     private readonly ILogger<WalletsController> _logger;
 
-    public WalletsController(IWalletService walletService, ILogger<WalletsController> logger)
+    public WalletsController(IWalletFacade walletFacade, ILogger<WalletsController> logger)
     {
-        _walletService = walletService ?? throw new ArgumentNullException(nameof(walletService));
+        _walletFacade = walletFacade ?? throw new ArgumentNullException(nameof(walletFacade));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
     [HttpGet("{walletId:long}")]
     [ProducesResponseType(typeof(WalletDto), StatusCodes.Status200OK)]
     //TODO: check validation of walletId
-    public async Task<IActionResult> GetWalletAsync([Required] long walletId)
+    public async Task<IActionResult> GetWalletAsync([Required] long walletId, [FromQuery] string? currency)
     {
         try
         {
-            var response = await _walletService.GetWalletAsync(walletId);
+            var response = await _walletFacade.GetWalletAsync(walletId, currency);
             // TODO: Either make response nullable, or return result from service and match it
             if (response is null)
             {
@@ -51,7 +51,7 @@ public class WalletsController : ControllerBase
     {
         try
         {
-            var createdWallet = await _walletService.CreateWalletAsync(request);
+            var createdWallet = await _walletFacade.CreateWalletAsync(request);
             // return CreatedAtAction(nameof(GetWalletAsync), new { walletId = createdWallet.Id }, createdWallet);
             return Ok();
         }
@@ -74,7 +74,7 @@ public class WalletsController : ControllerBase
         try
         {
             var request = new AdjustBalanceRequest(currency, walletId, strategy, amount);
-            var response = await _walletService.AdjustBalanceAsync(request);
+            var response = await _walletFacade.AdjustBalanceAsync(request);
             //TODO: Use proper response type for AdjustBalanceAsync and handle errors accordingly
             if (response is null)
             {

@@ -1,10 +1,11 @@
 using NoviCode.Core.Data;
+using NoviCode.Core.Domain;
 
 namespace NoviCode.Core.Abstractions;
 
 public interface IWalletService
 {
-    Task<WalletDto> GetWalletAsync(long walletId);
-    Task<WalletDto> CreateWalletAsync(CreateWalletRequest request);
-    Task<WalletDto?> AdjustBalanceAsync(AdjustBalanceRequest request);
+    Task<Wallet> GetWalletAsync(long walletId);
+    Task<Wallet> CreateWalletAsync(CreateWalletRequest request);
+    Task AdjustBalanceAsync(Wallet wallet, decimal amount, Strategy strategy);
 }
