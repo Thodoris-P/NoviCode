@@ -1,4 +1,4 @@
-namespace Novicode.Api.Configuration;
+namespace NoviCode.Api.Configuration;
 
 public class RedisCacheOptions
 {

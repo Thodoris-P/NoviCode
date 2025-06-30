@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NoviCode.Core.Abstractions;
 using NoviCode.Core.Data;
 
-namespace Novicode.Api.Controllers;
+namespace NoviCode.Api.Controllers;
 
 [ApiController]
 [Route("api/wallets")]

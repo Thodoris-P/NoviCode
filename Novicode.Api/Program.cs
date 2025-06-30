@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using Novicode.Api.Configuration;
+using NoviCode.Api.Configuration;
 using NoviCode.Core.Abstractions;
 using NoviCode.Core.Services;
 using NoviCode.Data.Data;
