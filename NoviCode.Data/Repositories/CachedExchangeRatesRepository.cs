@@ -22,7 +22,22 @@ public class CachedExchangeRatesRepository : IExchangeRatesRepository
     
     public async Task UpdateRates(IEnumerable<ExchangeRate> rates)
     {
+        await _inner.UpdateRates(rates);
+        
+        await CacheRates(rates);
+    }
+
+    private async Task CacheRates(IEnumerable<ExchangeRate> rates)
+    {
         foreach (var rate in rates)
+        {
+            await CacheRateSingle(rate);
+        }
+    }
+
+    private async Task CacheRateSingle(ExchangeRate rate)
+    {
+        try
         {
             var serialized = JsonSerializer.Serialize(rate);
             var options = new DistributedCacheEntryOptions
@@ -31,7 +46,10 @@ public class CachedExchangeRatesRepository : IExchangeRatesRepository
             };
             await _cache.SetStringAsync(rate.Currency, serialized, options);
         }
-        await _inner.UpdateRates(rates);
+        catch (Exception e)
+        {
+            _logger.LogWarning(e, "Failed to write to cache. key={Key}", rate.Currency);    
+        }
     }
 
     public async Task<ExchangeRate?> GetExchangeRate(string currency)
@@ -54,18 +72,9 @@ public class CachedExchangeRatesRepository : IExchangeRatesRepository
         
         var result = await _inner.GetExchangeRate(currency);
 
-        try
+        if (result is not null)
         {
-            var serialized = JsonSerializer.Serialize(result);
-            var options = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = _cacheDuration
-            };
-            await _cache.SetStringAsync(currency, serialized, options);
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(e, "Failed to write to cache. key={Key}", currency);    
+            await CacheRateSingle(result);
         }
         
         return result;
