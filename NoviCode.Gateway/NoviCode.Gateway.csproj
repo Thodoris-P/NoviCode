@@ -11,8 +11,4 @@
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\NoviCode.Core\NoviCode.Core.csproj" />
-    </ItemGroup>
-
 </Project>

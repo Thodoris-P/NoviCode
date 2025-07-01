@@ -79,6 +79,7 @@ builder.Services.AddScoped<IExchangeRatesRepository>(sp =>
     var logger = sp.GetRequiredService<ILogger<CachedExchangeRatesRepository>>();
     return new CachedExchangeRatesRepository(logger, repo, cache);
 });
+builder.Services.AddScoped<IExchangeRateProvider, EcbExchangeRateProvider>();
 builder.Services.AddEcbCurrencyGateway(builder.Configuration);
 #endregion
 

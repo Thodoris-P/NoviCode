@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NoviCode.Core.Abstractions;
 using NoviCode.Core.Domain;
@@ -21,9 +20,18 @@ public class CachedExchangeRatesRepository : IExchangeRatesRepository
         _cache = cache;
     }
     
-    public Task UpdateRates(IEnumerable<ExchangeRate> rates)
+    public async Task UpdateRates(IEnumerable<ExchangeRate> rates)
     {
-        return _inner.UpdateRates(rates);
+        foreach (var rate in rates)
+        {
+            var serialized = JsonSerializer.Serialize(rate);
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = _cacheDuration
+            };
+            await _cache.SetStringAsync(rate.Currency, serialized, options);
+        }
+        await _inner.UpdateRates(rates);
     }
 
     public async Task<ExchangeRate?> GetExchangeRate(string currency)

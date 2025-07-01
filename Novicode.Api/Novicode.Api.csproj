@@ -24,7 +24,6 @@
     <ItemGroup>
       <ProjectReference Include="..\NoviCode.Core\NoviCode.Core.csproj" />
       <ProjectReference Include="..\NoviCode.Data\NoviCode.Data.csproj" />
-      <ProjectReference Include="..\NoviCode.Gateway\NoviCode.Gateway.csproj" />
     </ItemGroup>
 
 </Project>

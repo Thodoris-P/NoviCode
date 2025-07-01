@@ -1,9 +1,7 @@
 using System.Xml.Serialization;
 using Microsoft.Extensions.Logging;
 using NoviCode.Core.Abstractions;
-using NoviCode.Core.Domain;
 using NoviCode.Gateway.Models;
-using NoviCode.Gateway.Utils;
 
 namespace NoviCode.Gateway.Services;
 
@@ -19,7 +17,7 @@ public class EcbCurrencyGateway : ICurrencyGateway
         _logger = logger;
     }
 
-    public async Task<IEnumerable<ExchangeRate>> GetLatestRatesAsync(CancellationToken cancellationToken = default)
+    public async Task<Envelope> GetLatestRatesAsync(CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.GetAsync(contextPath, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -28,7 +26,6 @@ public class EcbCurrencyGateway : ICurrencyGateway
         
         var serializer = new XmlSerializer(typeof(Envelope));
         var result = (Envelope)serializer.Deserialize(stream);
-
-        return EcbRatesToExchangeRatesMapper.Map(result);
+        return result;
     }
 }
