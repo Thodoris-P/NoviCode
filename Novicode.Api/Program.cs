@@ -5,7 +5,9 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using NoviCode.Api.Configuration;
+using NoviCode.Api.Middleware;
 using NoviCode.Core.Abstractions;
+using NoviCode.Core.Errors;
 using NoviCode.Core.Services;
 using NoviCode.Data.Data;
 using NoviCode.Gateway.Configuration;
@@ -59,6 +61,12 @@ builder.Services.AddOpenApi();
 
 builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig.ReadFrom.Configuration(context.Configuration));
+
+NoviCode.Api.Extensions.ResultExtensions.ConfigureErrorMappings(map =>
+{
+    map.Map<NotFoundError>(StatusCodes.Status404NotFound);
+});
+
 #endregion
 
 #region Application Services
@@ -122,7 +130,7 @@ builder.Services.AddHttpLogging(logging =>
 #endregion
 
 var app = builder.Build();
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpLogging();
 app.UseSerilogRequestLogging();
 

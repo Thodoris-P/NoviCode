@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using NoviCode.Api.Extensions;
 using NoviCode.Core.Abstractions;
 using NoviCode.Core.Data;
 
@@ -15,77 +16,40 @@ namespace NoviCode.Api.Controllers;
 public class WalletsController : ControllerBase
 {
     private readonly IWalletFacade _walletFacade;
-    private readonly ILogger<WalletsController> _logger;
 
-    public WalletsController(IWalletFacade walletFacade, ILogger<WalletsController> logger)
+    public WalletsController(IWalletFacade walletFacade)
     {
         _walletFacade = walletFacade ?? throw new ArgumentNullException(nameof(walletFacade));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
-    [HttpGet("{walletId:long}")]
+    [HttpGet("{walletId:long}", Name = nameof(GetWalletAsync))]
     [ProducesResponseType(typeof(WalletDto), StatusCodes.Status200OK)]
-    //TODO: check validation of walletId
-    public async Task<IActionResult> GetWalletAsync([Required] long walletId, [FromQuery] string? currency)
+    public async Task<ActionResult<WalletDto>> GetWalletAsync([FromRoute, Range(1, long.MaxValue)] long walletId, [FromQuery] string? currency)
     {
-        try
-        {
-            var response = await _walletFacade.GetWalletAsync(walletId, currency);
-            // TODO: Either make response nullable, or return result from service and match it
-            if (response is null)
-            {
-                return NotFound($"Wallet with ID {walletId} not found.");
-            }
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while retrieving the wallet with ID {WalletId}.", walletId);
-            return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
-        }
+        var result = await _walletFacade.GetWalletAsync(walletId, currency);
+        return result.ToActionResult();
     }
     
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateWalletAsync([FromBody] CreateWalletRequest request)
+    [ProducesResponseType(typeof(WalletDto), StatusCodes.Status201Created)]
+    public async Task<ActionResult<WalletDto>> CreateWalletAsync([FromBody] CreateWalletRequest request)
     {
-        try
-        {
-            var createdWallet = await _walletFacade.CreateWalletAsync(request);
-            // return CreatedAtAction(nameof(GetWalletAsync), new { walletId = createdWallet.Id }, createdWallet);
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while creating the wallet.");
-            return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
-        }
+        var result = await _walletFacade.CreateWalletAsync(request);
+        return result.IsSuccess 
+            ? CreatedAtRoute(nameof(GetWalletAsync), new { walletId = result.Value.Id }, result.Value) 
+            : result.ToActionResult();
     }
     
     [HttpPost("{walletId:long}/adjustbalance")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    //TODO: check validation of request params
-    public async Task<IActionResult> AdjustBalanceAsync(
-        [Required] long walletId,
-        [FromQuery] [Required] decimal amount,
-        [FromQuery] [Required] string currency,
-        [FromQuery] [Required] Strategy strategy)
+    public async Task<ActionResult<WalletDto>> AdjustBalanceAsync(
+        [FromRoute, Range(1, long.MaxValue)] long walletId,
+        [FromQuery] decimal amount,
+        [FromQuery, Required] string currency,
+        [FromQuery, EnumDataType(typeof(Strategy))] Strategy strategy)
     {
-        try
-        {
-            var request = new AdjustBalanceRequest(currency, walletId, strategy, amount);
-            var response = await _walletFacade.AdjustBalanceAsync(request);
-            //TODO: Use proper response type for AdjustBalanceAsync and handle errors accordingly
-            if (response is null)
-            {
-                return NotFound($"Wallet with ID {walletId} not found.");
-            }
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while adjusting the balance for wallet with ID {WalletId}.", walletId);
-            return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
-        }
+        var request = new AdjustBalanceRequest(currency, walletId, strategy, amount);
+        var response = await _walletFacade.AdjustBalanceAsync(request);
+        return response.ToActionResult();
     }
 }
