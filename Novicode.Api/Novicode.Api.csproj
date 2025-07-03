@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <AssemblyName>NoviCode.Api</AssemblyName>
         <RootNamespace>NoviCode.Api</RootNamespace>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
@@ -28,6 +29,12 @@
     <ItemGroup>
       <ProjectReference Include="..\NoviCode.Core\NoviCode.Core.csproj" />
       <ProjectReference Include="..\NoviCode.Data\NoviCode.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>

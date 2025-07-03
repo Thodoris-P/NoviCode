@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: NoviCode.Api/Dockerfile
+    image: novicode-api:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sqlserver
+      - redis
+    environment:
+      # Match appsettings.json
+      - DatabaseSettings__ConnectionString=Server=sqlserver,1433;Database=NoviCode;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - Redis__Configuration=redis:6379
+      - Redis__InstanceName=0
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: novicode-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    container_name: novicode-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
+    driver: local

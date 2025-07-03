@@ -41,3 +41,56 @@ The service is designed to facilitate secure and efficient currency transactions
   - The data access layer that contains the repositories, database context, caching, and migrations.
 ### NoviCode.Core.Tests
 - The unit tests for the core project.
+
+## 🚀 Getting Started
+
+Follow these steps to run the NoviCode API locally and in Docker:
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-org/novicode.git
+   ```
+
+2. **Configure your connection strings**
+
+  - Open `appsettings.json` and update the `DatabaseSettings:ConnectionString` to:
+    ```json
+    "Server=sqlserver,1433;Database=NoviCode;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;"
+    ```
+  - Add the Redis settings:
+    ```json
+    "Redis": {
+      "Configuration": "localhost",
+      "InstanceName": "0"
+    }
+    ```
+    - if you change any settings, make sure to update the `docker-compose.yml` file as well.
+    
+
+3. **Build and run with Docker Compose**
+
+   ```bash
+   docker-compose up --build
+   ```
+
+  - This will start three containers:
+    - **api**: Your .NET Web API on [http://localhost:5000](http://localhost:5000)
+    - **sqlserver**: SQL Server on port 1433
+    - **redis**: Redis on port 6379
+
+4. **Verify the API**
+
+    - Once all services are up, open your browser or use `curl`:
+      ```bash
+      curl http://localhost:8080/api/health
+      ```
+    - You should receive a 200 response indicating the API is running.  
+
+5. **Run migrations**  
+   ```bash
+   dotnet ef database update --project NoviCode.Data
+   ```
+
+You’re all set to develop and test the NoviCode API locally! Let me know if you encounter any issues.
+
