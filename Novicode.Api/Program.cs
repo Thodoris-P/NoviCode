@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using NoviCode.Api.Configuration;
@@ -67,6 +68,9 @@ NoviCode.Api.Extensions.ResultExtensions.ConfigureErrorMappings(map =>
     map.Map<NotFoundError>(StatusCodes.Status404NotFound);
 });
 
+builder.Services
+    .AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy());
 #endregion
 
 #region Application Services
@@ -130,6 +134,8 @@ builder.Services.AddHttpLogging(logging =>
 #endregion
 
 var app = builder.Build();
+app.MapHealthChecks("/api/health");
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpLogging();
 app.UseSerilogRequestLogging();
