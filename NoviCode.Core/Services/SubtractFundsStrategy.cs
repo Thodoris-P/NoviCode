@@ -9,9 +9,9 @@ public class SubtractFundsStrategy : IAdjustFundsStrategy
     public Strategy Strategy => Strategy.SubtractFunds;
     public void Apply(Wallet wallet, decimal amountInBaseCurrency)
     {
-        if (wallet.Balance >= amountInBaseCurrency)
-        {
-            wallet.Balance -= amountInBaseCurrency;
-        }
+        if (wallet.Balance < amountInBaseCurrency)
+            throw new InvalidOperationException("Insufficient funds in wallet to complete the transaction.");
+        
+        wallet.Balance -= amountInBaseCurrency;
     }
 }

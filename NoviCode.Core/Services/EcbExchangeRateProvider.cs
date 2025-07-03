@@ -1,6 +1,8 @@
+using FluentResults;
 using NoviCode.Core.Abstractions;
 using NoviCode.Core.Domain;
-using NoviCode.Gateway.Utils;
+using NoviCode.Core.Errors;
+using NoviCode.Core.Utils;
 
 namespace NoviCode.Core.Services;
 
@@ -13,9 +15,18 @@ public class EcbExchangeRateProvider : IExchangeRateProvider
         _currencyGateway = currencyGateway;
     }
     
-    public async Task<IEnumerable<ExchangeRate>> GetLatestRatesAsync()
+    public async Task<Result<IEnumerable<ExchangeRate>>> GetLatestRatesAsync()
     {
-        var envelope = await _currencyGateway.GetLatestRatesAsync();
-        return EcbRatesToExchangeRatesMapper.Map(envelope);
+        try
+        {
+            var envelope = await _currencyGateway.GetLatestRatesAsync();
+            var result = EcbRatesToExchangeRatesMapper.Map(envelope);
+            return new Result<IEnumerable<ExchangeRate>>().WithValue(result);
+        }
+        catch (Exception e)
+        {
+            return Result.Fail<IEnumerable<ExchangeRate>>(
+                new ExchangeProviderError("Failed to fetch exchange rates from ECB").CausedBy(e));
+        }
     }
 }

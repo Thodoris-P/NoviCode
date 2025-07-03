@@ -22,8 +22,14 @@ public class ExchangeRatesService : IExchangeRatesService
     {
         //get rates from gateway
         var rates = await _exchangeRateProvider.GetLatestRatesAsync();
-
+        
+        if (rates.IsFailed)
+        {
+            _logger.LogError("Failed to fetch exchange rates: {Errors}", rates.Errors);
+            throw new InvalidOperationException("Failed to fetch exchange rates");
+        }
+        
         //update rates to db
-        await _exchangeRatesRepository.UpdateRates(rates);
+        await _exchangeRatesRepository.UpdateRates(rates.Value);
     }
 }

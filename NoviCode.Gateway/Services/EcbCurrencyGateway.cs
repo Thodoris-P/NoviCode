@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using Microsoft.Extensions.Logging;
 using NoviCode.Core.Abstractions;
+using NoviCode.Gateway.Exceptions;
 using NoviCode.Gateway.Models;
 
 namespace NoviCode.Gateway.Services;
@@ -19,13 +20,22 @@ public class EcbCurrencyGateway : ICurrencyGateway
 
     public async Task<Envelope> GetLatestRatesAsync(CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync(contextPath, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await _httpClient.GetAsync(contextPath, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            response.EnsureSuccessStatusCode();
         
-        var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         
-        var serializer = new XmlSerializer(typeof(Envelope));
-        var result = (Envelope)serializer.Deserialize(stream);
-        return result;
+            var serializer = new XmlSerializer(typeof(Envelope));
+            if (serializer.Deserialize(stream) is Envelope result)
+                return result;
+            
+            throw new ArgumentNullException(nameof(result), "Received an empty or unrecognized response when deserializing currency rates.");
+        }
+        catch (Exception e)
+        {
+            throw new CurrencyGatewayException("Failed to retrieve or parse currency rates.", e);
+        }
     }
 }

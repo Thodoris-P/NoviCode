@@ -1,8 +1,9 @@
+using FluentResults;
 using NoviCode.Core.Domain;
 
 namespace NoviCode.Core.Abstractions;
 
 public interface IExchangeRateProvider
 {
-    Task<IEnumerable<ExchangeRate>> GetLatestRatesAsync();
+    Task<Result<IEnumerable<ExchangeRate>>> GetLatestRatesAsync();
 }

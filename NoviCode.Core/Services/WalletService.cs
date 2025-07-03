@@ -3,7 +3,6 @@ using NoviCode.Core.Abstractions;
 using NoviCode.Core.Data;
 using NoviCode.Core.Domain;
 using NoviCode.Core.Utils;
-using NoviCode.Gateway.Utils;
 
 namespace NoviCode.Core.Services;
 
@@ -34,7 +33,7 @@ public class WalletService : IWalletService
         return wallet;
     }
 
-    public async Task AdjustBalanceAsync(Wallet wallet, decimal amount, Strategy strategy)
+    public async Task<Wallet> AdjustBalanceAsync(Wallet wallet, decimal amount, Strategy strategy)
     {
         var strategyInstance = _adjustFundsFactory.GetStrategy(strategy);
         strategyInstance.Apply(wallet, amount);
@@ -43,5 +42,7 @@ public class WalletService : IWalletService
         
         _logger.LogInformation("Adjusted balance for wallet {WalletId} by {Amount} using strategy {Strategy}.",
             wallet.Id, amount, strategy);
+        
+        return wallet;
     }
 }

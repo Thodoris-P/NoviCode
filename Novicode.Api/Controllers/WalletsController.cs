@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using NoviCode.Api.Attributes;
 using NoviCode.Api.Extensions;
 using NoviCode.Core.Abstractions;
 using NoviCode.Core.Data;
@@ -44,8 +46,8 @@ public class WalletsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<WalletDto>> AdjustBalanceAsync(
         [FromRoute, Range(1, long.MaxValue)] long walletId,
-        [FromQuery] decimal amount,
-        [FromQuery, Required] string currency,
+        [FromQuery, PositiveDecimal(ErrorMessage = "Amount must be a positive decimal.")] decimal amount,
+        [FromQuery, Required(AllowEmptyStrings = false), BindRequired, MinLength(1, ErrorMessage = "Currency is required.")]  string currency,
         [FromQuery, EnumDataType(typeof(Strategy))] Strategy strategy)
     {
         var request = new AdjustBalanceRequest(currency, walletId, strategy, amount);

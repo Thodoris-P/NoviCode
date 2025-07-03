@@ -51,12 +51,29 @@ public class WalletFacade : IWalletFacade
             return Result.Fail(new NotFoundError("Wallet not found"));
         }
 
-        _logger.LogInformation("Converting wallet balance from {OriginalCurrency} to {RequestedCurrency}.", wallet.Currency, request.Currency);
-        var convertedAmount = await _currencyConverter.ConvertAsync(request.Amount, wallet.Currency, request.Currency);
+        decimal convertedAmount;
+        try
+        {
+            convertedAmount = await _currencyConverter.ConvertAsync(request.Amount, wallet.Currency, request.Currency);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to convert amount {Amount} from {FromCurrency} to {ToCurrency}.",
+                request.Amount, wallet.Currency, request.Currency);
+            return Result.Fail(new Error("Failed to convert amount").CausedBy(e));
+        }
+
+        try
+        {
+            await _walletService.AdjustBalanceAsync(wallet, convertedAmount, request.Strategy);
+        }
+        catch (Exception e)
+        {
+            _logger.LogInformation("Adjusted balance for wallet {WalletId} by {Amount} using strategy {Strategy}.",
+                wallet.Id, convertedAmount, request.Strategy);
+            return Result.Fail(new Error("Failed to adjust wallet balance").CausedBy(e));
+        }
         
-        await _walletService.AdjustBalanceAsync(wallet, convertedAmount, request.Strategy);
-        _logger.LogInformation("Adjusted balance for wallet {WalletId} by {Amount} using strategy {Strategy}.",
-            wallet.Id, convertedAmount, request.Strategy);
 
         return wallet.ToDto();
     }

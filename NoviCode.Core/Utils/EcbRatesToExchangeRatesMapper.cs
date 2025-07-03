@@ -1,7 +1,7 @@
 using NoviCode.Core.Domain;
 using NoviCode.Gateway.Models;
 
-namespace NoviCode.Gateway.Utils;
+namespace NoviCode.Core.Utils;
 
 public static class EcbRatesToExchangeRatesMapper
 {
