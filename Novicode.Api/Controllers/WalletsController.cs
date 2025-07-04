@@ -24,6 +24,12 @@ public class WalletsController : ControllerBase
         _walletFacade = walletFacade ?? throw new ArgumentNullException(nameof(walletFacade));
     }
     
+    /// <summary>
+    /// Get the wallet by its ID. If a currency is specified, the balance will be converted to that currency.
+    /// </summary>
+    /// <param name="walletId">The id of the wallet </param>
+    /// <param name="currency">The target currency to convert the wallet into</param>
+    /// <returns>The requested wallet</returns>
     [HttpGet("{walletId:long}", Name = nameof(GetWalletAsync))]
     [ProducesResponseType(typeof(WalletDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<WalletDto>> GetWalletAsync([FromRoute, Range(1, long.MaxValue)] long walletId, [FromQuery] string? currency)
@@ -32,6 +38,11 @@ public class WalletsController : ControllerBase
         return result.ToActionResult();
     }
     
+    /// <summary>
+    /// Creates a new wallet with the specified starting balance and currency.
+    /// </summary>
+    /// <param name="request">The request body encapsulating startingBalance(decimal) and currency(3 letter supported currency)</param>
+    /// <returns>Created Result with wallet</returns>
     [HttpPost]
     [ProducesResponseType(typeof(WalletDto), StatusCodes.Status201Created)]
     public async Task<ActionResult<WalletDto>> CreateWalletAsync([FromBody] CreateWalletRequest request)
@@ -42,6 +53,14 @@ public class WalletsController : ControllerBase
             : result.ToActionResult();
     }
     
+    /// <summary>
+    /// Adjusts the balance of a wallet by a specified amount and strategy.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>AddFunds</b>: Adds the specified amount to the wallet's balance.</para>  
+    /// <para><b>SubtractFunds</b>: Subtracts the specified amount from the wallet's balance.</para>  
+    /// <para><b>ForceSubtractFunds</b>: Subtracts the specified amount, even into negative.</para>  
+    /// </remarks>
     [HttpPost("{walletId:long}/adjustbalance")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<WalletDto>> AdjustBalanceAsync(

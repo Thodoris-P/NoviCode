@@ -96,4 +96,6 @@ You’re all set to develop and test the NoviCode API locally! Let me know if yo
 
 ## Important Notes
 - There is an .http file in the API project that contains some example requests to test the API.
+- Swagger is also enabled in development mode.
 - After further research, it seems that the IDistributedCache does not support the GetOrCreate pattern to prevent cache-stampede.
+- The Error responses are not properly mapped to ProblemDetails, but they are meaningful and contain the error message.
