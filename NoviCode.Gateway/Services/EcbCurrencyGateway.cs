@@ -1,6 +1,8 @@
 using System.Xml.Serialization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NoviCode.Core.Abstractions;
+using NoviCode.Gateway.Configuration;
 using NoviCode.Gateway.Exceptions;
 using NoviCode.Gateway.Models;
 
@@ -10,19 +12,20 @@ public class EcbCurrencyGateway : ICurrencyGateway
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<EcbCurrencyGateway> _logger;
-    private readonly string contextPath = "stats/eurofxref/eurofxref-daily.xml";
+    private readonly EcbGatewayOptions _ecbGatewayOptions;
 
-    public EcbCurrencyGateway(HttpClient httpClient, ILogger<EcbCurrencyGateway> logger)
+    public EcbCurrencyGateway(HttpClient httpClient, ILogger<EcbCurrencyGateway> logger, IOptions<EcbGatewayOptions> options)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _ecbGatewayOptions = options?.Value ?? throw new ArgumentNullException(nameof(options), "EcbGatewayOptions cannot be null.");
     }
 
     public async Task<Envelope> GetLatestRatesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.GetAsync(contextPath, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            var response = await _httpClient.GetAsync(_ecbGatewayOptions.RelativeUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             response.EnsureSuccessStatusCode();
         
             var stream = await response.Content.ReadAsStreamAsync(cancellationToken);

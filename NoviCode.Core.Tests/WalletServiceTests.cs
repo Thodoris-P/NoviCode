@@ -109,9 +109,11 @@ public class WalletServiceTests
         _walletRepositoryMock
             .Setup(r => r.UpdateAsync(wallet))
             .Returns(Task.CompletedTask);
+        _walletRepositoryMock.Setup(r => r.GetByIdAsync(wallet.Id))
+            .ReturnsAsync(wallet);
 
         // Act
-        _ = await _walletService.AdjustBalanceAsync(wallet, amount, strategy);
+        _ = await _walletService.AdjustBalanceAsync(wallet.Id, amount, strategy);
 
         // Assert
         // // Strategy was applied

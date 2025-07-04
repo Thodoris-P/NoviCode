@@ -16,6 +16,9 @@ services:
       - DatabaseSettings__ConnectionString=Server=sqlserver,1433;Database=NoviCode;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
       - Redis__Configuration=redis:6379
       - Redis__InstanceName=0
+      - Gateway__Ecb__BaseUrl=https://www.ecb.europa.eu/
+      - Gateway__Ecb__RelativeUrl=stats/eurofxref/eurofxref-daily.xml
+      - Gateway__Ecb__TimeoutSeconds=30
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest

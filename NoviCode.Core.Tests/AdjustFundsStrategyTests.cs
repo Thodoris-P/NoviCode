@@ -1,5 +1,6 @@
 using Bogus;
 using NoviCode.Core.Domain;
+using NoviCode.Core.Exceptions;
 using NoviCode.Core.Services;
 using Shouldly;
 
@@ -66,12 +67,8 @@ public class AdjustFundsStrategyTests
         var expected = _startingBalance;
         var strategy = new SubtractFundsStrategy();
 
-        // Act
-        strategy.Apply(_wallet, subtractAmount);
-        var actual = _wallet.Balance;
-
-        // Assert
-        actual.ShouldBe(expected);
+        // Act & Assert
+        Assert.Throws<InsufficientFundsException>(() => strategy.Apply(_wallet, subtractAmount));
     }
     
     [Fact]

@@ -5,5 +5,5 @@ namespace NoviCode.Core.Abstractions;
 
 public interface IExchangeRateProvider
 {
-    Task<Result<IEnumerable<ExchangeRate>>> GetLatestRatesAsync();
+    Task<Result<IEnumerable<ExchangeRate>>> GetLatestRatesAsync(CancellationToken cancellationToken = default);
 }

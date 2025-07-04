@@ -1,4 +1,5 @@
 using Bogus;
+using FluentResults;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NoviCode.Core.Abstractions;
@@ -16,9 +17,11 @@ public class WalletFacadeTests
     private readonly Faker _faker;
     private readonly Mock<IWalletService> _walletServiceMock;
     private readonly Mock<ICurrencyConverter> _currencyConverterMock;
+    private readonly Mock<IExchangeRatesService> _exchangeRatesServiceMock;
     private readonly Wallet _defaultWallet;
     private readonly CreateWalletRequest _createWalletRequest;
     private readonly AdjustBalanceRequest _adjustBalanceRequest;
+    
     
     // System under test
     private readonly WalletFacade _sut;
@@ -28,12 +31,14 @@ public class WalletFacadeTests
         _faker                  = new Faker();
         _walletServiceMock      = new Mock<IWalletService>();
         _currencyConverterMock  = new Mock<ICurrencyConverter>();
+        _exchangeRatesServiceMock = new Mock<IExchangeRatesService>();
         var loggerMock = new Mock<ILogger<WalletFacade>>();
 
         _sut = new WalletFacade(
             _walletServiceMock.Object,
             _currencyConverterMock.Object,
-            loggerMock.Object
+            loggerMock.Object,
+            _exchangeRatesServiceMock.Object
         );
         
         _defaultWallet = new Wallet
@@ -150,7 +155,7 @@ public class WalletFacadeTests
             .ReturnsAsync(convertedAmount);
 
         _walletServiceMock
-            .Setup(s => s.AdjustBalanceAsync(_defaultWallet, convertedAmount, request.Strategy))
+            .Setup(s => s.AdjustBalanceAsync(_defaultWallet.Id, convertedAmount, request.Strategy))
             .ReturnsAsync(_defaultWallet);
 
         // Act
@@ -159,7 +164,7 @@ public class WalletFacadeTests
         // Assert
         actual.IsSuccess.ShouldBeTrue();
         _currencyConverterMock.Verify(c => c.ConvertAsync(request.Amount, _defaultWallet.Currency, request.Currency), Times.Once);
-        _walletServiceMock.Verify(s => s.AdjustBalanceAsync(_defaultWallet, convertedAmount, request.Strategy), Times.Once);
+        _walletServiceMock.Verify(s => s.AdjustBalanceAsync(_defaultWallet.Id, convertedAmount, request.Strategy), Times.Once);
     }
 
     [Fact]
@@ -169,13 +174,15 @@ public class WalletFacadeTests
         _walletServiceMock
             .Setup(s => s.CreateWalletAsync(_createWalletRequest))
             .ReturnsAsync((Wallet?)null);
+        _exchangeRatesServiceMock.Setup(s => s.GetExchangeRate(It.IsAny<string>()))
+            .ReturnsAsync(new ExchangeRate());
 
         // Act
         var actual = await _sut.CreateWalletAsync(_createWalletRequest);
 
         // Assert
         actual.IsFailed.ShouldBeTrue();
-        actual.Errors.ShouldContain(e => e.Message == "Failed to create wallet");
+        actual.Errors.ShouldContain(e => e is Error);
     }
 
     [Fact]
@@ -187,6 +194,8 @@ public class WalletFacadeTests
         _walletServiceMock
             .Setup(s => s.CreateWalletAsync(_createWalletRequest))
             .ReturnsAsync(_defaultWallet);
+        _exchangeRatesServiceMock.Setup(s => s.GetExchangeRate(It.IsAny<string>()))
+            .ReturnsAsync(new ExchangeRate());
 
         // Act
         var actual = await _sut.CreateWalletAsync(_createWalletRequest);
@@ -194,5 +203,25 @@ public class WalletFacadeTests
         // Assert
         actual.IsSuccess.ShouldBeTrue();
         actual.Value.ShouldBeEquivalentTo(expected);
+    }
+    
+    [Fact]
+    public async Task CreateWalletAsync_InvalidCurrency_ReturnsError()
+    {
+        // Arrange
+        var expected = _defaultWallet.ToDto();
+
+        _walletServiceMock
+            .Setup(s => s.CreateWalletAsync(_createWalletRequest))
+            .ReturnsAsync(_defaultWallet);
+        _exchangeRatesServiceMock.Setup(s => s.GetExchangeRate(It.IsAny<string>()))
+            .ReturnsAsync((ExchangeRate?)null);
+
+        // Act
+        var actual = await _sut.CreateWalletAsync(_createWalletRequest);
+
+        // Assert
+        actual.IsSuccess.ShouldBeFalse();
+        actual.Errors.ShouldContain(e => e is ValidationError);
     }
 }

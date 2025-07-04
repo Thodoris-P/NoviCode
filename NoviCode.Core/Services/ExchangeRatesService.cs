@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using NoviCode.Core.Abstractions;
+using NoviCode.Core.Domain;
 
 namespace NoviCode.Core.Services;
 
@@ -20,8 +21,7 @@ public class ExchangeRatesService : IExchangeRatesService
     
     public async Task UpdateRatesAsync()
     {
-        //get rates from gateway
-        var rates = await _exchangeRateProvider.GetLatestRatesAsync();
+        var rates = await _exchangeRateProvider.GetLatestRatesAsync(CancellationToken.None);
         
         if (rates.IsFailed)
         {
@@ -29,7 +29,11 @@ public class ExchangeRatesService : IExchangeRatesService
             throw new InvalidOperationException("Failed to fetch exchange rates");
         }
         
-        //update rates to db
         await _exchangeRatesRepository.UpdateRates(rates.Value);
+    }
+    
+    public async Task<ExchangeRate?> GetExchangeRate(string currencyCode)
+    {
+        return await _exchangeRatesRepository.GetExchangeRate(currencyCode);
     }
 }

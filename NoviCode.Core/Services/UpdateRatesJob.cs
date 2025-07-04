@@ -4,6 +4,7 @@ using Quartz;
 
 namespace NoviCode.Core.Services;
 
+[DisallowConcurrentExecution]
 public class UpdateRatesJob : IJob
 {
     private readonly IExchangeRatesService _exchangeRatesService;

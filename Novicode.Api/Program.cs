@@ -56,16 +56,18 @@ builder.Services.AddRateLimiter(options =>
     );
 });
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig.ReadFrom.Configuration(context.Configuration));
 
+// Configure Error Mappings
 NoviCode.Api.Extensions.ResultExtensions.ConfigureErrorMappings(map =>
 {
     map.Map<NotFoundError>(StatusCodes.Status404NotFound);
+    map.Map<BusinessError>(StatusCodes.Status400BadRequest);
+    map.Map<ValidationError>(StatusCodes.Status400BadRequest);
+    map.Map<ExchangeProviderError>(StatusCodes.Status503ServiceUnavailable);
 });
 
 builder.Services
@@ -113,7 +115,7 @@ builder.Services.AddQuartzHostedService(options =>
 });
 #endregion
 
-#region Logger
+#region HttpLogging
 builder.Services.AddHttpLogging(logging =>
 {
     logging.LoggingFields = HttpLoggingFields.All;

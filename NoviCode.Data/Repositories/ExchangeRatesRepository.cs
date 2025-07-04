@@ -10,9 +10,6 @@ namespace NoviCode.Core.Services;
 public class ExchangeRatesRepository : IExchangeRatesRepository
 {
     private readonly NoviCodeContext  _context;
-    private static readonly ExchangeRate EuroExchangeRate = new(){ Rate = EuroRate, Currency = EuroCode };
-    private const decimal EuroRate = 1m;
-    private const string EuroCode = "EUR";
 
     public ExchangeRatesRepository(NoviCodeContext context)
     {
@@ -59,10 +56,6 @@ WHEN NOT MATCHED BY TARGET THEN
 
     public async Task<ExchangeRate?> GetExchangeRate(string currency)
     {
-        if (currency == EuroCode)
-        {
-            return EuroExchangeRate;
-        }
         return await _context.ExchangeRates
             .Where(r => r.Currency == currency)
             .OrderByDescending(r => r.EffectiveAt)

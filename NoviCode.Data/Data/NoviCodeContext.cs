@@ -24,6 +24,8 @@ public class NoviCodeContext : DbContext
                 .IsRequired();
             wallet.Property(e => e.Balance)
                 .HasColumnType("decimal(18,4)");
+            wallet.Property(e => e.RowVersion)
+                .IsRowVersion();
         });
 
         modelBuilder.Entity<ExchangeRate>(exchangeRate =>

@@ -1,7 +1,9 @@
 
 
+using Microsoft.EntityFrameworkCore;
 using NoviCode.Core.Abstractions;
 using NoviCode.Core.Domain;
+using NoviCode.Core.Exceptions;
 using NoviCode.Data.Data;
 
 namespace NoviCode.Core.Services;
@@ -29,6 +31,13 @@ public class WalletRepository : IWalletRepository
     public async Task UpdateAsync(Wallet wallet)
     {
         _context.Wallets.Update(wallet);
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new ConcurrencyException($"Concurrency conflict when updating wallet {wallet.Id}", ex);
+        }
     }
 }

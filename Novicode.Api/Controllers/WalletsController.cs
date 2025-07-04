@@ -47,7 +47,7 @@ public class WalletsController : ControllerBase
     public async Task<ActionResult<WalletDto>> AdjustBalanceAsync(
         [FromRoute, Range(1, long.MaxValue)] long walletId,
         [FromQuery, PositiveDecimal(ErrorMessage = "Amount must be a positive decimal.")] decimal amount,
-        [FromQuery, Required(AllowEmptyStrings = false), BindRequired, MinLength(1, ErrorMessage = "Currency is required.")]  string currency,
+        [FromQuery, Required(AllowEmptyStrings = false), BindRequired, Length(1, 3, ErrorMessage = "Currency is required.")]  string currency,
         [FromQuery, EnumDataType(typeof(Strategy))] Strategy strategy)
     {
         var request = new AdjustBalanceRequest(currency, walletId, strategy, amount);

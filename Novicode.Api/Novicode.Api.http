@@ -1,6 +1,41 @@
-@Novicode.Api_HostAddress = http://localhost:5208
+@HOST = http://localhost:8080
 
-GET {{Novicode.Api_HostAddress}}/weatherforecast/
+###
+# Get a wallet by ID
+GET {{HOST}}/api/wallets/1
 Accept: application/json
 
 ###
+# Get a wallet by ID and currency
+GET {{HOST}}/api/wallets/1?currency=USD
+Accept: application/json
+###
+
+# Create a new wallet
+# - startingBalance: decimal >= 0
+# - currency: non-empty string, that matches the currency of the wallet
+POST {{HOST}}/api/wallets
+Content-Type: application/json
+
+{
+  "startingBalance": 0,
+  "currency": "EUR"
+}
+
+###
+
+# Adjust balance of an existing wallet
+# - amount: positive decimal
+# - currency: non-empty string
+# - strategy: one of AddFunds, SubtractFunds, or ForceSubtractFunds
+POST {{HOST}}/api/wallets/1/adjustbalance?amount=10&currency=USD&strategy=AddFunds
+Accept: application/json
+
+###
+POST {{HOST}}/api/wallets/1/adjustbalance?amount=10&currency=USD&strategy=SubtractFunds
+Accept: application/json
+
+###
+POST {{HOST}}/api/wallets/1/adjustbalance?amount=10&currency=USD&strategy=ForceSubtractFunds
+Accept: application/json
+

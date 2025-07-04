@@ -94,3 +94,5 @@ Follow these steps to run the NoviCode API locally and in Docker:
 
 You’re all set to develop and test the NoviCode API locally! Let me know if you encounter any issues.
 
+## Important Notes
+- After further research, it seems that the IDistributedCache does not support the GetOrCreate pattern to prevent cache-stampede.
